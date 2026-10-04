@@ -1,16 +1,19 @@
 import json
+import os
 import uuid
 import datetime
 from typing import Any, Dict, List, Optional
 from pymongo import MongoClient, DESCENDING
 
 from app.core.security import hash_password
-
-MONGODB_URI = "mongodb+srv://cricketinfo243_db_user:YlIhnEouxCENqi3K@smartcodeinspection.ku3jwwj.mongodb.net/smartcodeinspection?retryWrites=true&w=majority"
+from app.core.config import settings
 
 
 class MongoDBStorageService:
-    def __init__(self, uri: str = MONGODB_URI):
+    def __init__(self, uri: Optional[str] = None):
+        uri = uri or os.getenv("MONGODB_URI", "").strip()
+        if not uri:
+            raise ValueError("MONGODB_URI must be configured to use MongoDB storage.")
         self.uri = uri
         self.client = MongoClient(uri, serverSelectionTimeoutMS=5000)
         self.db = self.client["smartcodeinspection"]
@@ -32,6 +35,20 @@ class MongoDBStorageService:
 
     def _seed_default_users(self):
         try:
+            if settings.APP_ENV.lower() == "production":
+                if settings.ADMIN_EMAIL and settings.ADMIN_PASSWORD:
+                    if not self.users.find_one({"email": settings.ADMIN_EMAIL.lower().strip()}):
+                        self.users.insert_one({
+                            "user_id": f"usr_{uuid.uuid4().hex[:8]}",
+                            "email": settings.ADMIN_EMAIL.lower().strip(),
+                            "hashed_password": hash_password(settings.ADMIN_PASSWORD),
+                            "full_name": settings.ADMIN_NAME,
+                            "role": "admin",
+                            "is_active": True,
+                            "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat()
+                        })
+                return
+
             # Seed Admin
             if not self.users.find_one({"email": "admin@codeguard.ai"}):
                 self.users.insert_one({

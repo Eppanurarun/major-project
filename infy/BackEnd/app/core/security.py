@@ -2,10 +2,19 @@ import base64
 import hashlib
 import hmac
 import json
+import os
+import secrets
 import time
 from typing import Any, Dict, Optional
 
-SECRET_KEY = "codeguard-ai-super-secret-jwt-key-2026-secure"
+from app.core.config import settings
+
+
+SECRET_KEY = os.getenv("SECRET_KEY", "").strip()
+if not SECRET_KEY:
+    if settings.APP_ENV.lower() == "production":
+        raise RuntimeError("SECRET_KEY must be configured in production.")
+    SECRET_KEY = secrets.token_urlsafe(32)
 
 
 def hash_password(password: str) -> str:

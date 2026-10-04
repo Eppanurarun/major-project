@@ -9,9 +9,14 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - MONGODB_URI=mongodb+srv://cricketinfo243_db_user:YlIhnEouxCENqi3K@smartcodeinspection.ku3jwwj.mongodb.net/?appName=Smartcodeinspection
-      - CORS_ORIGINS=http://localhost:5173,http://localhost:80,http://127.0.0.1:80
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      APP_ENV: ${APP_ENV:-development}
+      SECRET_KEY: ${SECRET_KEY:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-Platform Administrator}
+      MONGODB_URI: ${MONGODB_URI:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:80,http://127.0.0.1:80}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     restart: always
 
   frontend:

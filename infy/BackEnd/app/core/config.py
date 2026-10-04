@@ -18,7 +18,11 @@ load_dotenv()
 
 class Settings(BaseModel):
 
+    APP_ENV: str = os.getenv("APP_ENV", "development")
     PROJECT_NAME: str = "Smart Code Inspection Platform"
+    ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "")
+    ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")
+    ADMIN_NAME: str = os.getenv("ADMIN_NAME", "Platform Administrator")
 
     # CORS Settings
     BACKEND_CORS_ORIGINS: List[str] = [

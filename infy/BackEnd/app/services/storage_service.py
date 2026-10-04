@@ -4,6 +4,8 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from app.core.config import settings
+
 
 DEFAULT_FILENAMES = {
     "python": "main.py",
@@ -101,6 +103,26 @@ class SQLiteStorageService:
 
     def _seed_default_users(self, connection: sqlite3.Connection):
         from app.core.security import hash_password
+
+        if settings.APP_ENV.lower() == "production":
+            if settings.ADMIN_EMAIL and settings.ADMIN_PASSWORD:
+                cursor = connection.execute(
+                    "SELECT user_id FROM users WHERE email = ?",
+                    (settings.ADMIN_EMAIL.lower().strip(),),
+                )
+                if not cursor.fetchone():
+                    connection.execute(
+                        "INSERT INTO users (user_id, email, hashed_password, full_name, role, is_active) VALUES (?, ?, ?, ?, ?, ?)",
+                        (
+                            f"usr_{uuid.uuid4().hex[:8]}",
+                            settings.ADMIN_EMAIL.lower().strip(),
+                            hash_password(settings.ADMIN_PASSWORD),
+                            settings.ADMIN_NAME,
+                            "admin",
+                            1,
+                        ),
+                    )
+            return
 
         # Admin user
         admin_email = "admin@codeguard.ai"
